@@ -1,0 +1,44 @@
+{
+  "use_real_data": true,
+  "api_sources": [
+    {
+      "name": "SolarEdge API",
+      "url": "https://monitoringapi.solaredge.com/site/{site_id}/currentPowerFlow.json",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      },
+      "params": {
+        "api_key": "YOUR_API_KEY"
+      },
+      "mapping": {
+        "power": "siteCurrentPowerFlow.PV.currentPower",
+        "voltage": "siteCurrentPowerFlow.GRID.voltage",
+        "current": "siteCurrentPowerFlow.GRID.current"
+      }
+    },
+    {
+      "name": "Enphase API",
+      "url": "https://api.enphaseenergy.com/api/v2/systems/{system_id}/summary",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      },
+      "mapping": {
+        "power": "current_power",
+        "daily_energy": "energy_today",
+        "efficiency": "efficiency"
+      }
+    }
+  ],
+  "serial_sources": [
+    {
+      "name": "Arduino Solar Monitor",
+      "port": "/dev/ttyUSB0",
+      "baudrate": 9600,
+      "timeout": 5
+    }
+  ],
+  "weather_config": {
+    "api_key": "YOUR_OPENWEATHER_API_KEY",
+    "location": "San Francisco, CA, US"
+  }
+}

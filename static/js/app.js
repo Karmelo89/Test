@@ -9,6 +9,8 @@ class SolarMonitor {
         this.currentData = [];
         this.tempData = [];
         this.timeLabels = [];
+        this.predictionsData = [];
+        this.predictionsLabels = [];
         this.maxDataPoints = 20;
         
         this.init();
@@ -313,6 +315,72 @@ class SolarMonitor {
                 }
             }
         });
+
+        // Predictions Chart
+        const predictionsCtx = document.getElementById('predictionsChart').getContext('2d');
+        this.charts.predictions = new Chart(predictionsCtx, {
+            type: 'line',
+            data: {
+                labels: this.predictionsLabels,
+                datasets: [{
+                    label: 'Predicted Power (W)',
+                    data: this.predictionsData,
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' W';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `Predicted Power: ${context.parsed.y.toLocaleString()} W`;
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
+                animation: {
+                    duration: 750,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
     }
 
     updatePowerChart() {
@@ -327,6 +395,37 @@ class SolarMonitor {
         this.charts.parameters.data.datasets[1].data = [...this.currentData];
         this.charts.parameters.data.datasets[2].data = [...this.tempData];
         this.charts.parameters.update('none');
+    }
+
+    updatePredictionsChart() {
+        this.charts.predictions.data.labels = [...this.predictionsLabels];
+        this.charts.predictions.data.datasets[0].data = [...this.predictionsData];
+        this.charts.predictions.update('none');
+    }
+
+    async loadPredictions() {
+        try {
+            const response = await fetch('/api/predictions?hours=24');
+            if (response.ok) {
+                const predictions = await response.json();
+                
+                this.predictionsData = [];
+                this.predictionsLabels = [];
+                
+                predictions.forEach(pred => {
+                    const time = new Date(pred.timestamp);
+                    this.predictionsLabels.push(time.toLocaleTimeString());
+                    this.predictionsData.push(pred.predicted_power);
+                });
+                
+                this.updatePredictionsChart();
+                console.log('Loaded predictions:', predictions.length);
+            } else {
+                console.warn('No predictions available');
+            }
+        } catch (error) {
+            console.error('Error loading predictions:', error);
+        }
     }
 
     setupEventHandlers() {
@@ -375,10 +474,23 @@ class SolarMonitor {
     }
 }
 
+// Global function for the predictions button
+function loadPredictions() {
+    if (window.solarMonitor) {
+        window.solarMonitor.loadPredictions();
+    }
+}
+
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const monitor = new SolarMonitor();
+    window.solarMonitor = monitor; // Make it globally accessible
     monitor.loadHistoricalData();
+    
+    // Load initial predictions
+    setTimeout(() => {
+        monitor.loadPredictions();
+    }, 2000);
     
     // Add some visual flair
     const cards = document.querySelectorAll('.card');
