@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Monitor Configuration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .config-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .data-source-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        
+        .nav-link {
+            color: #3498db;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status-success {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .status-error {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        .json-editor {
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-cog"></i>
+                    <h1>Solar Monitor Configuration</h1>
+                </div>
+                <div>
+                    <a href="/" class="nav-link">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Configuration Sections -->
+        <main class="dashboard">
+            <!-- Data Sources Configuration -->
+            <section class="config-section">
+                <h2><i class="fas fa-database"></i> Data Sources</h2>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="useRealData"> Use Real Data Sources
+                    </label>
+                </div>
+
+                <!-- API Sources -->
+                <h3>API Data Sources</h3>
+                <div id="apiSources"></div>
+                <button class="btn btn-primary" onclick="addApiSource()">
+                    <i class="fas fa-plus"></i> Add API Source
+                </button>
+
+                <!-- Serial Sources -->
+                <h3>Serial Data Sources</h3>
+                <div id="serialSources"></div>
+                <button class="btn btn-primary" onclick="addSerialSource()">
+                    <i class="fas fa-plus"></i> Add Serial Source
+                </button>
+
+                <!-- Weather Configuration -->
+                <h3>Weather Data</h3>
+                <div class="form-group">
+                    <label>API Key (OpenWeatherMap):</label>
+                    <input type="text" id="weatherApiKey" placeholder="Enter your OpenWeatherMap API key">
+                </div>
+                <div class="form-group">
+                    <label>Location:</label>
+                    <input type="text" id="weatherLocation" placeholder="City, Country (e.g., London, UK)">
+                </div>
+
+                <button class="btn btn-success" onclick="saveDataSources()">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+                <button class="btn btn-warning" onclick="testDataSources()">
+                    <i class="fas fa-test-tube"></i> Test Data Collection
+                </button>
+            </section>
+
+            <!-- Data Import -->
+            <section class="config-section">
+                <h2><i class="fas fa-upload"></i> Data Import</h2>
+                
+                <div class="form-group">
+                    <label>CSV File Path:</label>
+                    <input type="text" id="csvFilePath" placeholder="/path/to/your/solar_data.csv">
+                </div>
+                
+                <div class="form-group">
+                    <label>Field Mapping (JSON):</label>
+                    <textarea id="csvMapping" class="json-editor" rows="8" placeholder='{
+  "power": "power_watts",
+  "voltage": "voltage_volts",
+  "current": "current_amps",
+  "temperature": "temp_celsius",
+  "timestamp": "datetime"
+}'></textarea>
+                </div>
+                
+                <button class="btn btn-primary" onclick="importCsvData()">
+                    <i class="fas fa-upload"></i> Import CSV Data
+                </button>
+            </section>
+
+            <!-- Machine Learning -->
+            <section class="config-section">
+                <h2><i class="fas fa-brain"></i> Machine Learning Models</h2>
+                
+                <div class="form-group">
+                    <label>Target Variable:</label>
+                    <select id="mlTarget">
+                        <option value="power">Power</option>
+                        <option value="efficiency">Efficiency</option>
+                        <option value="daily_energy">Daily Energy</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" onclick="trainModel()">
+                    <i class="fas fa-play"></i> Train Model
+                </button>
+                
+                <button class="btn btn-warning" onclick="generatePredictions()">
+                    <i class="fas fa-chart-line"></i> Generate Predictions
+                </button>
+                
+                <div id="modelResults" style="margin-top: 20px;"></div>
+            </section>
+
+            <!-- System Status -->
+            <section class="config-section">
+                <h2><i class="fas fa-info-circle"></i> System Status</h2>
+                
+                <div id="systemStatus">
+                    <p><strong>Database:</strong> <span id="dbStatus">Checking...</span></p>
+                    <p><strong>Real Data Sources:</strong> <span id="dataSourceStatus">Not configured</span></p>
+                    <p><strong>ML Models:</strong> <span id="mlStatus">Not trained</span></p>
+                </div>
+                
+                <button class="btn btn-primary" onclick="checkSystemStatus()">
+                    <i class="fas fa-refresh"></i> Refresh Status
+                </button>
+            </section>
+        </main>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+
+    <script>
+        let dataSourcesConfig = {
+            api_sources: [],
+            serial_sources: [],
+            weather_config: {},
+            use_real_data: false
+        };
+
+        // Load existing configuration
+        async function loadConfiguration() {
+            try {
+                const response = await fetch('/api/data-sources');
+                if (response.ok) {
+                    dataSourcesConfig = await response.json();
+                    populateForm();
+                }
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+            }
+        }
+
+        function populateForm() {
+            document.getElementById('useRealData').checked = dataSourcesConfig.use_real_data;
+            
+            // Populate weather config
+            if (dataSourcesConfig.weather_config) {
+                document.getElementById('weatherApiKey').value = dataSourcesConfig.weather_config.api_key || '';
+                document.getElementById('weatherLocation').value = dataSourcesConfig.weather_config.location || '';
+            }
+            
+            // Populate API sources
+            renderApiSources();
+            renderSerialSources();
+        }
+
+        function renderApiSources() {
+            const container = document.getElementById('apiSources');
+            container.innerHTML = '';
+            
+            dataSourcesConfig.api_sources.forEach((source, index) => {
+                const div = document.createElement('div');
+                div.className = 'data-source-item';
+                div.innerHTML = `
+                    <h4>API Source ${index + 1}</h4>
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" value="${source.name || ''}" onchange="updateApiSource(${index}, 'name', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>URL:</label>
+                        <input type="text" value="${source.url || ''}" onchange="updateApiSource(${index}, 'url', this.value)">
+                    </div>
+                    <button class="btn btn-danger" onclick="removeApiSource(${index})">Remove</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderSerialSources() {
+            const container = document.getElementById('serialSources');
+            container.innerHTML = '';
+            
+            dataSourcesConfig.serial_sources.forEach((source, index) => {
+                const div = document.createElement('div');
+                div.className = 'data-source-item';
+                div.innerHTML = `
+                    <h4>Serial Source ${index + 1}</h4>
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" value="${source.name || ''}" onchange="updateSerialSource(${index}, 'name', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Port:</label>
+                        <input type="text" value="${source.port || ''}" onchange="updateSerialSource(${index}, 'port', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Baud Rate:</label>
+                        <input type="number" value="${source.baudrate || 9600}" onchange="updateSerialSource(${index}, 'baudrate', parseInt(this.value))">
+                    </div>
+                    <button class="btn btn-danger" onclick="removeSerialSource(${index})">Remove</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addApiSource() {
+            dataSourcesConfig.api_sources.push({
+                name: '',
+                url: '',
+                mapping: {}
+            });
+            renderApiSources();
+        }
+
+        function addSerialSource() {
+            dataSourcesConfig.serial_sources.push({
+                name: '',
+                port: '',
+                baudrate: 9600
+            });
+            renderSerialSources();
+        }
+
+        function updateApiSource(index, field, value) {
+            dataSourcesConfig.api_sources[index][field] = value;
+        }
+
+        function updateSerialSource(index, field, value) {
+            dataSourcesConfig.serial_sources[index][field] = value;
+        }
+
+        function removeApiSource(index) {
+            dataSourcesConfig.api_sources.splice(index, 1);
+            renderApiSources();
+        }
+
+        function removeSerialSource(index) {
+            dataSourcesConfig.serial_sources.splice(index, 1);
+            renderSerialSources();
+        }
+
+        async function saveDataSources() {
+            dataSourcesConfig.use_real_data = document.getElementById('useRealData').checked;
+            dataSourcesConfig.weather_config = {
+                api_key: document.getElementById('weatherApiKey').value,
+                location: document.getElementById('weatherLocation').value
+            };
+
+            try {
+                const response = await fetch('/api/data-sources', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataSourcesConfig)
+                });
+
+                if (response.ok) {
+                    showStatus('Configuration saved successfully!', 'success');
+                } else {
+                    showStatus('Failed to save configuration', 'error');
+                }
+            } catch (error) {
+                showStatus('Error saving configuration: ' + error.message, 'error');
+            }
+        }
+
+        async function testDataSources() {
+            try {
+                const response = await fetch('/api/collect-real-data', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatus('Data collection test completed. Check console for details.', 'success');
+                    console.log('Test results:', result);
+                } else {
+                    showStatus('Data collection test failed', 'error');
+                }
+            } catch (error) {
+                showStatus('Error testing data sources: ' + error.message, 'error');
+            }
+        }
+
+        async function importCsvData() {
+            const filePath = document.getElementById('csvFilePath').value;
+            const mappingText = document.getElementById('csvMapping').value;
+
+            try {
+                const mapping = JSON.parse(mappingText);
+                
+                const response = await fetch('/api/import-csv', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        file_path: filePath,
+                        mapping: mapping
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatus(`Successfully imported ${result.imported_records} records!`, 'success');
+                } else {
+                    showStatus('Failed to import CSV data', 'error');
+                }
+            } catch (error) {
+                showStatus('Error importing CSV: ' + error.message, 'error');
+            }
+        }
+
+        async function trainModel() {
+            const target = document.getElementById('mlTarget').value;
+
+            try {
+                showStatus('Training model... This may take a while.', 'success');
+                
+                const response = await fetch('/api/train-model', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ target: target })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatus('Model trained successfully!', 'success');
+                    
+                    const resultsDiv = document.getElementById('modelResults');
+                    resultsDiv.innerHTML = '<h4>Training Results:</h4>' + 
+                        JSON.stringify(result.results, null, 2);
+                } else {
+                    showStatus('Failed to train model', 'error');
+                }
+            } catch (error) {
+                showStatus('Error training model: ' + error.message, 'error');
+            }
+        }
+
+        async function generatePredictions() {
+            try {
+                const response = await fetch('/api/predictions?hours=24');
+                
+                if (response.ok) {
+                    const predictions = await response.json();
+                    showStatus(`Generated ${predictions.length} predictions!`, 'success');
+                    console.log('Predictions:', predictions);
+                } else {
+                    showStatus('Failed to generate predictions', 'error');
+                }
+            } catch (error) {
+                showStatus('Error generating predictions: ' + error.message, 'error');
+            }
+        }
+
+        async function checkSystemStatus() {
+            // This would check various system components
+            document.getElementById('dbStatus').textContent = 'Connected';
+            document.getElementById('dataSourceStatus').textContent = 
+                dataSourcesConfig.use_real_data ? 'Configured' : 'Not configured';
+            document.getElementById('mlStatus').textContent = 'Checking...';
+            
+            // Check if predictions are available
+            try {
+                const response = await fetch('/api/predictions?hours=1');
+                if (response.ok) {
+                    document.getElementById('mlStatus').textContent = 'Available';
+                } else {
+                    document.getElementById('mlStatus').textContent = 'Not trained';
+                }
+            } catch (error) {
+                document.getElementById('mlStatus').textContent = 'Error';
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfiguration();
+            checkSystemStatus();
+        });
+    </script>
+</body>
+</html>

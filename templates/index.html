@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Monitor Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-solar-panel"></i>
+                    <h1>Solar Monitor</h1>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="connectionStatus">Connecting...</span>
+                    <a href="/config" style="margin-left: 20px; color: #3498db; text-decoration: none;">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard">
+            <!-- Current Status Cards -->
+            <section class="status-cards">
+                <div class="card power-card">
+                    <div class="card-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Power Output</h3>
+                        <div class="value" id="powerValue">0 W</div>
+                        <div class="unit">Current Generation</div>
+                    </div>
+                </div>
+
+                <div class="card voltage-card">
+                    <div class="card-icon">
+                        <i class="fas fa-plug"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Voltage</h3>
+                        <div class="value" id="voltageValue">0 V</div>
+                        <div class="unit">System Voltage</div>
+                    </div>
+                </div>
+
+                <div class="card current-card">
+                    <div class="card-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Current</h3>
+                        <div class="value" id="currentValue">0 A</div>
+                        <div class="unit">System Current</div>
+                    </div>
+                </div>
+
+                <div class="card temp-card">
+                    <div class="card-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Temperature</h3>
+                        <div class="value" id="tempValue">0°C</div>
+                        <div class="unit">Panel Temperature</div>
+                    </div>
+                </div>
+
+                <div class="card efficiency-card">
+                    <div class="card-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Efficiency</h3>
+                        <div class="value" id="efficiencyValue">0%</div>
+                        <div class="unit">System Efficiency</div>
+                    </div>
+                </div>
+
+                <div class="card energy-card">
+                    <div class="card-icon">
+                        <i class="fas fa-battery-three-quarters"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3>Daily Energy</h3>
+                        <div class="value" id="energyValue">0 Wh</div>
+                        <div class="unit">Today's Total</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Status -->
+            <section class="system-status">
+                <div class="status-panel">
+                    <h3><i class="fas fa-info-circle"></i> System Status</h3>
+                    <div class="status-badge" id="systemStatus">Normal</div>
+                    <div class="last-update">
+                        Last Updated: <span id="lastUpdate">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-line"></i> Power Generation (Real-time)</h3>
+                    <canvas id="powerChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-area"></i> System Parameters</h3>
+                    <canvas id="parametersChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3><i class="fas fa-crystal-ball"></i> Power Predictions (24h)</h3>
+                    <canvas id="predictionsChart"></canvas>
+                    <div style="margin-top: 10px;">
+                        <button onclick="loadPredictions()" style="padding: 5px 10px; background: #3498db; color: white; border: none; border-radius: 3px;">
+                            <i class="fas fa-refresh"></i> Update Predictions
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
